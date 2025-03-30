@@ -147,10 +147,10 @@ async function editTask(taskId) {
         
         document.getElementById('edit-task-form-container').classList.remove('hidden');
         document.getElementById('edit-titre').value = task.titre;
-        document.getElementById('edit-description').value = task.description;
+        document.getElementById('edit-description').value = task.description || '';
         document.getElementById('edit-priorite').value = task.priorite;
         document.getElementById('edit-statut').value = task.statut;
-        document.getElementById('edit-commentaire').value = task.commentaire;
+        document.getElementById('edit-commentaire').value = task.commentaire || '';
         
         document.getElementById('edit-task-form').dataset.taskId = taskId;
     } catch (error) {

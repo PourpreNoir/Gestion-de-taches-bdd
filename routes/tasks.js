@@ -45,11 +45,11 @@ router.put('/:id', async (req, res) => {
     }
 
     // Mettre à jour les champs
-    task.titre = req.body.titre;
-    task.description = req.body.description;
-    task.priorite = req.body.priorite;
-    task.statut = req.body.statut;
-    task.commentaire = req.body.commentaire;
+    if (req.body.titre) task.titre = req.body.titre;
+    if (req.body.description) task.description = req.body.description;
+    if (req.body.priorite) task.priorite = req.body.priorite;
+    if (req.body.statut) task.statut = req.body.statut;
+    if (req.body.commentaire !== undefined) task.commentaire = req.body.commentaire;
 
     const updatedTask = await task.save();
     res.json(updatedTask);
