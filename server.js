@@ -1,27 +1,21 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const tasksRouter = require('./routes/tasks');
-const helmet = require('helmet');
-const cors = require('cors');
 const morgan = require('morgan');
 require('dotenv').config();
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const path = require('path');
 
-// Security Middleware
-app.use(helmet());
-app.use(cors());
-
-// Logging Middleware
+// Middleware
+app.use(express.json());
 app.use(morgan('dev'));
 
 // Serve Static Files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Middleware
-app.use(express.json());
+// Routes
 app.use('/tasks', tasksRouter);
 
 // MongoDB Connection

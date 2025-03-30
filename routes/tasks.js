@@ -5,34 +5,69 @@ const router = express.Router();
 // Récupérer toutes les tâches
 router.get('/', async (req, res) => {
   try {
-    const tasks = await Task.find();
+    const tasks = await Task.find().sort({ dateCreation: -1 });
     res.json(tasks);
   } catch (error) {
-    res.status(500).json({ error: 'Erreur lors de la récupération des tâches' });
+    res.status(500).json({ message: error.message });
   }
 });
 
-// Ajouter une nouvelle tâche
-router.post('/', async (req, res) => {
+// Récupérer une tâche spécifique
+router.get('/:id', async (req, res) => {
   try {
-    const newTask = new Task(req.body);
-    await newTask.save();
+    const task = await Task.findById(req.params.id);
+    if (!task) {
+      return res.status(404).json({ message: 'Tâche non trouvée' });
+    }
+    res.json(task);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Créer une nouvelle tâche
+router.post('/', async (req, res) => {
+  const task = new Task(req.body);
+  try {
+    const newTask = await task.save();
     res.status(201).json(newTask);
   } catch (error) {
-    res.status(500).json({ error: 'Erreur lors de la création de la tâche' });
+    res.status(400).json({ message: error.message });
   }
 });
 
-// Supprimer une tâche par ID
+// Mettre à jour une tâche
+router.put('/:id', async (req, res) => {
+  try {
+    const task = await Task.findById(req.params.id);
+    if (!task) {
+      return res.status(404).json({ message: 'Tâche non trouvée' });
+    }
+
+    // Mettre à jour les champs
+    task.titre = req.body.titre;
+    task.description = req.body.description;
+    task.priorite = req.body.priorite;
+    task.commentaire = req.body.commentaire;
+
+    const updatedTask = await task.save();
+    res.json(updatedTask);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// Supprimer une tâche
 router.delete('/:id', async (req, res) => {
   try {
-    const deletedTask = await Task.findByIdAndDelete(req.params.id);
-    if (!deletedTask) {
-      return res.status(404).json({ error: 'Tâche non trouvée' });
+    const task = await Task.findById(req.params.id);
+    if (!task) {
+      return res.status(404).json({ message: 'Tâche non trouvée' });
     }
-    res.json({ message: 'Tâche supprimée avec succès', task: deletedTask });
+    await task.deleteOne();
+    res.json({ message: 'Tâche supprimée' });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur lors de la suppression de la tâche' });
+    res.status(500).json({ message: error.message });
   }
 });
 

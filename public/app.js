@@ -1,84 +1,211 @@
-// Fetch and display tasks
+// Fonction pour récupérer les tâches depuis l'API
 async function fetchTasks() {
     try {
-      const response = await fetch('/tasks');
-      const tasks = await response.json();
-  
-      const taskList = document.getElementById('task-list');
-      taskList.innerHTML = ''; // Clear the list
-  
-      tasks.forEach(task => {
-        const taskItem = document.createElement('li');
-        taskItem.innerHTML = `
-          <strong>${task.titre}</strong> - ${task.priorite}
-          <button onclick="deleteTask('${task._id}')">Supprimer</button>
-        `;
-        taskList.appendChild(taskItem);
-      });
+        const response = await fetch('/tasks');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const tasks = await response.json();
+        return tasks;
     } catch (error) {
-      console.error('Erreur lors de la récupération des tâches:', error);
+        console.error('Erreur lors de la récupération des tâches:', error);
+        return [];
     }
-  }
-  
-  // Add a new task
-  async function addTask(event) {
-    event.preventDefault();
-  
-    const titleInput = document.getElementById('task-title');
-    const descriptionInput = document.getElementById('task-description');
-    const priorityInput = document.getElementById('task-priority');
-    const authorNameInput = document.getElementById('task-author-name');
-    const authorEmailInput = document.getElementById('task-author-email');
-  
+}
+
+// Gestionnaire d'événements pour le formulaire d'ajout de tâche
+document.getElementById('task-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
     const task = {
-      titre: titleInput.value,
-      description: descriptionInput.value,
-      priorite: priorityInput.value,
-      auteur: {
-        nom: authorNameInput.value,
-        email: authorEmailInput.value
-      }
+        auteur: {
+            nom: document.getElementById('auteur-nom').value,
+            prenom: document.getElementById('auteur-prenom').value,
+            email: document.getElementById('auteur-email').value
+        },
+        titre: document.getElementById('titre').value,
+        description: document.getElementById('description').value,
+        categorie: document.getElementById('categorie').value,
+        priorite: document.getElementById('priorite').value,
+        statut: 'à faire',
+        commentaire: document.getElementById('commentaire').value
     };
-  
+
     try {
-      const response = await fetch('/tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(task)
-      });
-  
-      if (response.ok) {
-        titleInput.value = '';
-        descriptionInput.value = '';
-        priorityInput.value = 'moyenne';
-        authorNameInput.value = '';
-        authorEmailInput.value = '';
-        fetchTasks(); // Refresh the task list
-      } else {
-        const errorData = await response.json();
-        alert(`Erreur: ${errorData.error}`);
-      }
+        const response = await fetch('/tasks', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(task)
+        });
+
+        if (response.ok) {
+            this.reset();
+            displayTasks();
+        } else {
+            const error = await response.json();
+            throw new Error(error.message || 'Erreur lors de l\'ajout de la tâche');
+        }
     } catch (error) {
-      console.error('Erreur lors de l\'ajout de la tâche:', error);
+        console.error('Erreur:', error);
+        alert(error.message || 'Erreur lors de l\'ajout de la tâche');
     }
-  }
-  
-  // Delete a task
-  async function deleteTask(taskId) {
+});
+
+// Fonction pour afficher les tâches
+async function displayTasks() {
+    const taskList = document.getElementById('task-list');
+    const tasks = await fetchTasks();
+    
+    // Appliquer les filtres
+    const statutFilter = document.getElementById('filtre-statut').value;
+    const prioriteFilter = document.getElementById('filtre-priorite').value;
+    
+    let filteredTasks = tasks;
+    if (statutFilter) {
+        filteredTasks = filteredTasks.filter(task => task.statut === statutFilter);
+    }
+    if (prioriteFilter) {
+        filteredTasks = filteredTasks.filter(task => task.priorite === prioriteFilter);
+    }
+
+    taskList.innerHTML = '';
+    
+    filteredTasks.forEach(task => {
+        const taskElement = document.createElement('div');
+        taskElement.className = `task-card priority-${task.priorite}`;
+        
+        taskElement.innerHTML = `
+            <h3>${task.titre}</h3>
+            <p>${task.description}</p>
+            <div class="task-meta">
+                <span>Auteur: ${task.auteur.prenom} ${task.auteur.nom}</span>
+                <span>Catégorie: ${getCategorieName(task.categorie)}</span>
+                <span>Priorité: ${task.priorite}</span>
+                <span>Statut: ${task.statut}</span>
+            </div>
+            ${task.commentaire ? `<p>Commentaire: ${task.commentaire}</p>` : ''}
+            <div class="task-actions">
+                <button class="btn edit-btn" data-task-id="${task._id}">Modifier</button>
+                <button class="btn danger delete-btn" data-task-id="${task._id}">Supprimer</button>
+            </div>
+        `;
+        
+        taskList.appendChild(taskElement);
+    });
+
+    // Ajouter les gestionnaires d'événements aux boutons
+    taskList.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            editTask(btn.dataset.taskId);
+        });
+    });
+
+    taskList.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            deleteTask(btn.dataset.taskId);
+        });
+    });
+}
+
+// Fonction pour obtenir le nom de la catégorie
+function getCategorieName(categorieId) {
+    const categories = {
+        '1': 'Personnel',
+        '2': 'Travail',
+        '3': 'Projet',
+        '4': 'Autres'
+    };
+    return categories[categorieId] || 'Inconnue';
+}
+
+// Fonction pour éditer une tâche
+async function editTask(taskId) {
     try {
-      const response = await fetch(`/tasks/${taskId}`, { method: 'DELETE' });
-      if (response.ok) {
-        fetchTasks(); // Refresh the task list
-      } else {
-        alert('Erreur lors de la suppression de la tâche');
-      }
+        const response = await fetch(`/tasks/${taskId}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const task = await response.json();
+        
+        document.getElementById('edit-task-form-container').classList.remove('hidden');
+        document.getElementById('edit-titre').value = task.titre;
+        document.getElementById('edit-description').value = task.description;
+        document.getElementById('edit-priorite').value = task.priorite;
+        document.getElementById('edit-commentaire').value = task.commentaire;
+        
+        document.getElementById('edit-task-form').dataset.taskId = taskId;
     } catch (error) {
-      console.error('Erreur lors de la suppression de la tâche:', error);
+        console.error('Erreur lors de la récupération de la tâche:', error);
+        alert('Erreur lors de la récupération de la tâche');
     }
-  }
-  
-  // Event listeners
-  document.getElementById('task-form').addEventListener('submit', addTask);
-  
-  // Fetch tasks on page load
-  fetchTasks();
+}
+
+// Fonction pour annuler l'édition
+function cancelEdit() {
+    document.getElementById('edit-task-form-container').classList.add('hidden');
+    document.getElementById('edit-task-form').reset();
+}
+
+// Gestionnaire d'événements pour le formulaire de modification
+document.getElementById('edit-task-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const taskId = this.dataset.taskId;
+    const taskData = {
+        titre: document.getElementById('edit-titre').value,
+        description: document.getElementById('edit-description').value,
+        priorite: document.getElementById('edit-priorite').value,
+        commentaire: document.getElementById('edit-commentaire').value
+    };
+
+    try {
+        const response = await fetch(`/tasks/${taskId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(taskData)
+        });
+
+        if (response.ok) {
+            document.getElementById('edit-task-form-container').classList.add('hidden');
+            this.reset();
+            displayTasks();
+        } else {
+            const error = await response.json();
+            throw new Error(error.message || 'Erreur lors de la modification de la tâche');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert(error.message || 'Erreur lors de la modification de la tâche');
+    }
+});
+
+// Fonction pour supprimer une tâche
+async function deleteTask(taskId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?')) {
+        try {
+            const response = await fetch(`/tasks/${taskId}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                displayTasks();
+            } else {
+                const error = await response.json();
+                throw new Error(error.message || 'Erreur lors de la suppression de la tâche');
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            alert(error.message || 'Erreur lors de la suppression de la tâche');
+        }
+    }
+}
+
+// Gestionnaire d'événements pour les filtres
+document.getElementById('appliquer-filtres').addEventListener('click', displayTasks);
+
+// Afficher les tâches au chargement de la page
+document.addEventListener('DOMContentLoaded', displayTasks);
