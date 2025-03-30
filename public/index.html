@@ -10,77 +10,93 @@
   <div class="container">
     <h1>Gestion de Tâches</h1>
 
-    <!-- Formulaire d'ajout de tâche -->
-    <form id="task-form" class="form-box">
-      <div class="form-group">
-        <input type="text" id="auteur-nom" placeholder="Nom de l'auteur">
-        <input type="text" id="auteur-prenom" placeholder="Prénom de l'auteur">
-      </div>
-      <input type="email" id="auteur-email" placeholder="Email de l'auteur">
-      <input type="text" id="titre" placeholder="Titre" required>
-      <textarea id="description" placeholder="Description"></textarea>
-      <div class="form-group">
-        <select id="categorie">
-          <option value="1">Personnel</option>
-          <option value="2">Travail</option>
-          <option value="3">Projet</option>
-          <option value="4">Autres</option>
-        </select>
-        <select id="priorite">
-          <option value="basse">Basse</option>
-          <option value="moyenne">Moyenne</option>
-          <option value="haute">Haute</option>
-          <option value="critique">Critique</option>
-        </select>
-      </div>
-      <input type="text" id="commentaire" placeholder="Ajouter un commentaire">
-      <button type="submit" class="btn">Ajouter</button>
-    </form>
-
-    <!-- Filtres -->
-    <div id="filters" class="filter-box">
-      <h3>Filtres</h3>
-      <div class="form-group">
-        <select id="filtre-statut">
-          <option value="">Tous les statuts</option>
-          <option value="à faire">À faire</option>
-          <option value="en cours">En cours</option>
-          <option value="terminée">Terminée</option>
-          <option value="annulée">Annulée</option>
-        </select>
-        <select id="filtre-priorite">
-          <option value="">Toutes les priorités</option>
-          <option value="basse">Basse</option>
-          <option value="moyenne">Moyenne</option>
-          <option value="haute">Haute</option>
-          <option value="critique">Critique</option>
-        </select>
-      </div>
-      <button id="appliquer-filtres" class="btn">Filtrer</button>
-    </div>
-
-    <!-- Formulaire de modification de tâche -->
-    <div id="edit-task-form-container" class="form-box hidden">
-      <h3>Modifier une tâche</h3>
-      <form id="edit-task-form">
-        <input type="text" id="edit-titre" placeholder="Titre" required>
-        <textarea id="edit-description" placeholder="Description"></textarea>
-        <select id="edit-priorite">
-          <option value="basse">Basse</option>
-          <option value="moyenne">Moyenne</option>
-          <option value="haute">Haute</option>
-          <option value="critique">Critique</option>
-        </select>
-        <input type="text" id="edit-commentaire" placeholder="Ajouter un commentaire">
+    <!-- Colonne de gauche -->
+    <div class="left-column">
+      <!-- Formulaire d'ajout de tâche -->
+      <form id="task-form" class="form-box">
+        <h3>Nouvelle Tâche</h3>
         <div class="form-group">
-          <button type="submit" class="btn success">Enregistrer</button>
-          <button type="button" onclick="cancelEdit()" class="btn danger">Annuler</button>
+          <input type="text" id="auteur-nom" placeholder="Nom de l'auteur">
+          <input type="text" id="auteur-prenom" placeholder="Prénom de l'auteur">
         </div>
+        <input type="email" id="auteur-email" placeholder="Email de l'auteur">
+        <input type="text" id="titre" placeholder="Titre" required>
+        <textarea id="description" placeholder="Description"></textarea>
+        <div class="form-group">
+          <select id="categorie">
+            <option value="1">Personnel</option>
+            <option value="2">Travail</option>
+            <option value="3">Projet</option>
+            <option value="4">Autres</option>
+          </select>
+          <select id="priorite">
+            <option value="basse">Basse</option>
+            <option value="moyenne">Moyenne</option>
+            <option value="haute">Haute</option>
+            <option value="critique">Critique</option>
+          </select>
+        </div>
+        <input type="text" id="commentaire" placeholder="Ajouter un commentaire">
+        <button type="submit" class="btn">Ajouter</button>
       </form>
     </div>
 
-    <!-- Liste des tâches -->
-    <div id="task-list"></div>
+    <!-- Colonne de droite -->
+    <div class="right-column">
+      <!-- Filtres -->
+      <div id="filters" class="filter-box">
+        <h3>Filtres</h3>
+        <div class="form-group">
+          <input type="text" id="filtre-titre" placeholder="Rechercher">
+        </div>
+        <div class="form-group">
+          <select id="filtre-statut">
+            <option value="">Tous les statuts</option>
+            <option value="à faire">À faire</option>
+            <option value="en cours">En cours</option>
+            <option value="terminée">Terminée</option>
+            <option value="annulée">Annulée</option>
+          </select>
+          <select id="filtre-priorite">
+            <option value="">Toutes les priorités</option>
+            <option value="basse">Basse</option>
+            <option value="moyenne">Moyenne</option>
+            <option value="haute">Haute</option>
+            <option value="critique">Critique</option>
+          </select>
+        </div>
+        <button id="appliquer-filtres" class="btn">Filtrer</button>
+      </div>
+
+      <!-- Formulaire de modification de tâche -->
+      <div id="edit-task-form-container" class="form-box hidden">
+        <h3>Modifier une tâche</h3>
+        <form id="edit-task-form">
+          <input type="text" id="edit-titre" placeholder="Titre" required>
+          <textarea id="edit-description" placeholder="Description"></textarea>
+          <select id="edit-priorite">
+            <option value="basse">Basse</option>
+            <option value="moyenne">Moyenne</option>
+            <option value="haute">Haute</option>
+            <option value="critique">Critique</option>
+          </select>
+          <select id="edit-statut">
+            <option value="à faire">À faire</option>
+            <option value="en cours">En cours</option>
+            <option value="terminée">Terminée</option>
+            <option value="annulée">Annulée</option>
+          </select>
+          <input type="text" id="edit-commentaire" placeholder="Ajouter un commentaire">
+          <div class="form-group">
+            <button type="submit" class="btn success">Enregistrer</button>
+            <button type="button" class="btn danger" id="cancel-edit">Annuler</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Liste des tâches -->
+      <div id="task-list"></div>
+    </div>
   </div>
   <script src="app.js"></script>
 </body>

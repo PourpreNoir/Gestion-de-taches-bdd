@@ -48,6 +48,7 @@ router.put('/:id', async (req, res) => {
     task.titre = req.body.titre;
     task.description = req.body.description;
     task.priorite = req.body.priorite;
+    task.statut = req.body.statut;
     task.commentaire = req.body.commentaire;
 
     const updatedTask = await task.save();

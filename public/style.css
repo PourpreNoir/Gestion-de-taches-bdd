@@ -12,15 +12,19 @@ body {
 }
 
 .container {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 2rem auto;
   padding: 0 1rem;
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: 2rem;
 }
 
 h1 {
   text-align: center;
   color: #2c3e50;
   margin-bottom: 2rem;
+  grid-column: 1 / -1;
 }
 
 .form-box, .filter-box {
@@ -109,6 +113,7 @@ textarea {
 
 .task-meta {
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   font-size: 0.9rem;
   color: #666;
@@ -125,3 +130,14 @@ textarea {
 .priority-moyenne { border-left: 4px solid #f1c40f; }
 .priority-haute { border-left: 4px solid #e67e22; }
 .priority-critique { border-left: 4px solid #e74c3c; }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-group {
+    flex-direction: column;
+  }
+}

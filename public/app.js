@@ -59,13 +59,29 @@ async function displayTasks() {
     const tasks = await fetchTasks();
     
     // Appliquer les filtres
+    const searchTerm = document.getElementById('filtre-titre').value.toLowerCase();
     const statutFilter = document.getElementById('filtre-statut').value;
     const prioriteFilter = document.getElementById('filtre-priorite').value;
     
     let filteredTasks = tasks;
+    
+    // Recherche dans tous les champs de texte
+    if (searchTerm) {
+        filteredTasks = filteredTasks.filter(task => 
+            task.titre.toLowerCase().includes(searchTerm) ||
+            task.description.toLowerCase().includes(searchTerm) ||
+            (task.commentaire && task.commentaire.toLowerCase().includes(searchTerm)) ||
+            task.auteur.nom.toLowerCase().includes(searchTerm) ||
+            task.auteur.prenom.toLowerCase().includes(searchTerm)
+        );
+    }
+    
+    // Filtre par statut
     if (statutFilter) {
         filteredTasks = filteredTasks.filter(task => task.statut === statutFilter);
     }
+    
+    // Filtre par priorité
     if (prioriteFilter) {
         filteredTasks = filteredTasks.filter(task => task.priorite === prioriteFilter);
     }
@@ -133,6 +149,7 @@ async function editTask(taskId) {
         document.getElementById('edit-titre').value = task.titre;
         document.getElementById('edit-description').value = task.description;
         document.getElementById('edit-priorite').value = task.priorite;
+        document.getElementById('edit-statut').value = task.statut;
         document.getElementById('edit-commentaire').value = task.commentaire;
         
         document.getElementById('edit-task-form').dataset.taskId = taskId;
@@ -157,6 +174,7 @@ document.getElementById('edit-task-form').addEventListener('submit', async funct
         titre: document.getElementById('edit-titre').value,
         description: document.getElementById('edit-description').value,
         priorite: document.getElementById('edit-priorite').value,
+        statut: document.getElementById('edit-statut').value,
         commentaire: document.getElementById('edit-commentaire').value
     };
 
@@ -206,6 +224,9 @@ async function deleteTask(taskId) {
 
 // Gestionnaire d'événements pour les filtres
 document.getElementById('appliquer-filtres').addEventListener('click', displayTasks);
+
+// Gestionnaire d'événements pour la recherche en temps réel
+document.getElementById('filtre-titre').addEventListener('input', displayTasks);
 
 // Afficher les tâches au chargement de la page
 document.addEventListener('DOMContentLoaded', displayTasks);
