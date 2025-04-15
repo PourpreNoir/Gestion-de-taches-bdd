@@ -17,6 +17,11 @@ async function fetchTasks() {
 document.getElementById('task-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     
+    const tags = document.getElementById('tags').value
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag.length > 0);
+    
     const task = {
         auteur: {
             nom: document.getElementById('auteur-nom').value,
@@ -28,7 +33,10 @@ document.getElementById('task-form').addEventListener('submit', async function(e
         categorie: document.getElementById('categorie').value,
         priorite: document.getElementById('priorite').value,
         statut: 'à faire',
-        commentaire: document.getElementById('commentaire').value
+        commentaire: document.getElementById('commentaire').value,
+        dateEcheance: document.getElementById('date-echeance').value,
+        rappel: document.getElementById('rappel').checked,
+        tags: tags
     };
 
     try {
@@ -72,7 +80,8 @@ async function displayTasks() {
             task.description.toLowerCase().includes(searchTerm) ||
             (task.commentaire && task.commentaire.toLowerCase().includes(searchTerm)) ||
             task.auteur.nom.toLowerCase().includes(searchTerm) ||
-            task.auteur.prenom.toLowerCase().includes(searchTerm)
+            task.auteur.prenom.toLowerCase().includes(searchTerm) ||
+            (task.tags && task.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
         );
     }
     
@@ -90,7 +99,13 @@ async function displayTasks() {
     
     filteredTasks.forEach(task => {
         const taskElement = document.createElement('div');
-        taskElement.className = `task-card priority-${task.priorite}`;
+        const isUrgent = task.dateEcheance && new Date(task.dateEcheance) < new Date();
+        taskElement.className = `task-card priority-${task.priorite} ${isUrgent ? 'urgent' : ''}`;
+        
+        const dateEcheance = task.dateEcheance ? new Date(task.dateEcheance).toLocaleDateString() : '';
+        const tagsHTML = task.tags && task.tags.length > 0 
+            ? `<div class="tags">${task.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>`
+            : '';
         
         taskElement.innerHTML = `
             <h3>${task.titre}</h3>
@@ -101,6 +116,9 @@ async function displayTasks() {
                 <span>Priorité: ${task.priorite}</span>
                 <span>Statut: ${task.statut}</span>
             </div>
+            ${dateEcheance ? `<div class="date-echeance ${isUrgent ? 'urgent' : ''}">Échéance: ${dateEcheance}</div>` : ''}
+            ${tagsHTML}
+            ${task.rappel ? '<div class="rappel">🔔</div>' : ''}
             ${task.commentaire ? `<p>Commentaire: ${task.commentaire}</p>` : ''}
             <div class="task-actions">
                 <button class="btn edit-btn" data-task-id="${task._id}">Modifier</button>
@@ -151,6 +169,9 @@ async function editTask(taskId) {
         document.getElementById('edit-priorite').value = task.priorite;
         document.getElementById('edit-statut').value = task.statut;
         document.getElementById('edit-commentaire').value = task.commentaire || '';
+        document.getElementById('edit-date-echeance').value = task.dateEcheance ? new Date(task.dateEcheance).toISOString().split('T')[0] : '';
+        document.getElementById('edit-rappel').checked = task.rappel || false;
+        document.getElementById('edit-tags').value = task.tags ? task.tags.join(', ') : '';
         
         document.getElementById('edit-task-form').dataset.taskId = taskId;
     } catch (error) {
@@ -170,12 +191,20 @@ document.getElementById('edit-task-form').addEventListener('submit', async funct
     e.preventDefault();
     
     const taskId = this.dataset.taskId;
+    const tags = document.getElementById('edit-tags').value
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag.length > 0);
+    
     const taskData = {
         titre: document.getElementById('edit-titre').value,
         description: document.getElementById('edit-description').value,
         priorite: document.getElementById('edit-priorite').value,
         statut: document.getElementById('edit-statut').value,
-        commentaire: document.getElementById('edit-commentaire').value
+        commentaire: document.getElementById('edit-commentaire').value,
+        dateEcheance: document.getElementById('edit-date-echeance').value,
+        rappel: document.getElementById('edit-rappel').checked,
+        tags: tags
     };
 
     try {

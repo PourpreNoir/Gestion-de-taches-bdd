@@ -21,7 +21,13 @@ const taskSchema = new mongoose.Schema({
     default: 'à faire'
   },
   commentaire: { type: String },
-  dateCreation: { type: Date, default: Date.now }
+  dateCreation: { type: Date, default: Date.now },
+  dateEcheance: { type: Date },
+  rappel: { 
+    type: Boolean, 
+    default: false 
+  },
+  tags: [{ type: String }]
 });
 
 module.exports = mongoose.model('Task', taskSchema);
